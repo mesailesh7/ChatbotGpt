@@ -15,12 +15,12 @@ app.use(express.json());
 
 const port = process.env.PORT || 3000
 
-app.get('/health', (req:Request, res:Response) => {
+app.get('/health', (req: Request, res: Response) => {
   res.send("Server Up")
 })
 
-app.get('/api/hello', (req:Request, res:Response) => {
-  res.json({message: "Hello world"})
+app.get('/api/hello', (req: Request, res: Response) => {
+  res.json({ message: "Hello world" })
 })
 
 let lastResponseId: string | null;
@@ -45,21 +45,30 @@ app.post('/api/chat', async (req: Request, res: Response) => {
     return;
   }
 
-  const { prompt, conversationId } = req.body;
 
-  const response = await client.responses.create({
-    model: "gpt-4o-mini",
-    input: prompt,
-    temperature: 0.2,
-    max_output_tokens: 100,
-    previous_response_id: conversations.get(conversationId)
-  })
+  try {
+    const { prompt, conversationId } = req.body;
 
-  conversations.set(conversationId, response.id)
+    const response = await client.responses.create({
+      model: "gpt-4o-mini",
+      input: prompt,
+      temperature: 0.2,
+      max_output_tokens: 100,
+      previous_response_id: conversations.get(conversationId)
+    })
 
-  lastResponseId = response.id;
+    conversations.set(conversationId, response.id)
 
-  res.json({message: response.output_text})
+    lastResponseId = response.id;
+
+    res.json({ message: response.output_text })
+  } catch (error) {
+    res.status(500).json({
+      error: "failed to generate a response"
+    })
+  }
+
+
 })
 
 app.listen(port, () => {
