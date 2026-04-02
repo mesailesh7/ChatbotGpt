@@ -2,6 +2,7 @@ import express from 'express'
 import type { Request, Response } from 'express'
 import OpenAI from 'openai'
 import dotenv from "dotenv"
+import z from "zod"
 
 dotenv.config()
 
@@ -26,12 +27,25 @@ let lastResponseId: string | null;
 //Conversationid => lastResponseId
 // conv1 => 100
 // //conv2 => 200
-const conversations = new Map<string,string>()
+const conversations = new Map<string, string>()
+const chatSchema = z.object({
+  prompt: z.string()
+    .trim()
+    .min(1, 'Prompt is required')
+    .max(1000, "prompt is too long (Max 100 characters)"),
+  conversationId: z.string().uuid()
+
+})
 
 app.post('/api/chat', async (req: Request, res: Response) => {
+  const parsedResult = chatSchema.safeParse(req.body);
+
+  if (!parsedResult.success) {
+    res.status(400).json(parsedResult.error.format());
+    return;
+  }
+
   const { prompt, conversationId } = req.body;
-
-
 
   const response = await client.responses.create({
     model: "gpt-4o-mini",
@@ -47,7 +61,6 @@ app.post('/api/chat', async (req: Request, res: Response) => {
 
   res.json({message: response.output_text})
 })
-
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`)
