@@ -1,18 +1,39 @@
 import express from 'express'
 import type { Request, Response } from 'express'
+import OpenAI from 'openai'
 import dotenv from "dotenv"
 
 dotenv.config()
 
-const app = express()
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+})
+
+const app = express();
+app.use(express.json());
+
 const port = process.env.PORT || 3000
 
-app.get('/', (req:Request, res:Response) => {
-  res.send("Hello world")
+app.get('/health', (req:Request, res:Response) => {
+  res.send("Server Up")
 })
 
 app.get('/api/hello', (req:Request, res:Response) => {
   res.json({message: "Hello world"})
+})
+
+
+app.post('/api/chat',async (req: Request, res: Response) => {
+  const { prompt } = req.body;
+
+  const response = await client.responses.create({
+    model: "gpt-4o-mini",
+    input: prompt,
+    temperature: 0.2,
+    max_output_tokens:100
+  })
+
+  res.json({message: response.output_text})
 })
 
 

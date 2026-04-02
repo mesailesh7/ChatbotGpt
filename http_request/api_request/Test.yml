@@ -1,0 +1,21 @@
+info:
+  name: Test
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: http://localhost:3000/api/chat
+  body:
+    type: json
+    data: |-
+      {
+        "prompt":"What is the capital of the France?"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

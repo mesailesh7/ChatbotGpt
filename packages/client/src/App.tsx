@@ -13,10 +13,10 @@ function App() {
 
   console.log("message:",message)
   return (
-    <div className="p-4">
-      <p className="font-bold text-3xl">{message}</p>
-      <Button>Click Me</Button>
-    </div>
+    <>
+      <p className="font-bold p-4 text-3xl">{message}</p>
+      <Button>Hello world</Button>
+    </>
 
   )
 }
