@@ -22,21 +22,29 @@ type Message = {
 export default function ChatBot() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isBotTyping, setIsBotTyping] = useState(false);
+  const [error, setError] = useState("");
+
   const lastMessageRef = useRef<HTMLDivElement | null>(null);
   const conversationId = useRef(crypto.randomUUID());
   const { register, handleSubmit, reset, formState } = useForm<FormData>();
 
   const onSubmit = async ({ prompt }: FormData) => {
-    setMessages(prev => [...prev, { content: prompt, role: 'user' }]);
-    setIsBotTyping(true);
-
-    reset({ prompt: '' });
-    const { data } = await axios.post<ChatResponse>('/api/chat', {
-      prompt,
-      conversationId: conversationId.current,
-    });
-    setMessages(prev => [...prev, { content: data.message, role: 'bot' }]);
-    setIsBotTyping(false);
+    try {
+      setMessages(prev => [...prev, { content: prompt, role: 'user' }]);
+      setIsBotTyping(true);
+      setError("")
+      reset({ prompt: '' });
+      const { data } = await axios.post<ChatResponse>('/api/chatx', {
+        prompt,
+        conversationId: conversationId.current,
+      });
+      setMessages(prev => [...prev, { content: data.message, role: 'bot' }]);
+    } catch (error) {
+      console.error(error)
+      setError("Something went wrong, try again");
+    } finally {
+      setIsBotTyping(false);
+    }
   };
 
   const onKeyDown = (e: KeyboardEvent<HTMLFormElement>) => {
@@ -61,11 +69,11 @@ export default function ChatBot() {
 
           return (
             <div key={index}
-                 onCopy={onCopyMessage}
-                 ref={index === messages.length - 1 ? lastMessageRef : null}
-                 className={` rounded-xl px-3 py-1 ${message.role === 'user'
-                   ? 'bg-blue-600 text-white self-end'
-                   : 'bg-gray-100 text-black self-start'}`}
+              onCopy={onCopyMessage}
+              ref={index === messages.length - 1 ? lastMessageRef : null}
+              className={` rounded-xl px-3 py-1 ${message.role === 'user'
+                ? 'bg-blue-600 text-white self-end'
+                : 'bg-gray-100 text-black self-start'}`}
             >
               <ReactMarkdown>{message.content}</ReactMarkdown>
             </div>
@@ -79,6 +87,7 @@ export default function ChatBot() {
           </div>
 
         )}
+        (error && <p className='text-red-500'>{error}</p>)
       </div>
       <form
         onSubmit={handleSubmit(onSubmit)}
@@ -86,10 +95,10 @@ export default function ChatBot() {
           onKeyDown
         }
         className="flex flex-col gap-2 items-end border-2 rounded-3xl">
-          <textarea
-            {...register('prompt', { required: true, validate: (data) => data.trim().length > 0 })}
-            autoFocus
-            className="w-full border-0 focus:outline-0 resize-none " placeholder="Ask Anything" maxLength={1000} />
+        <textarea
+          {...register('prompt', { required: true, validate: (data) => data.trim().length > 0 })}
+          autoFocus
+          className="w-full border-0 focus:outline-0 resize-none " placeholder="Ask Anything" maxLength={1000} />
         <Button
           disabled={!formState.isValid}
           className="rounded-full w-9 h-9 "><FaArrowUp /></Button>
