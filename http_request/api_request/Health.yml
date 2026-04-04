@@ -4,8 +4,8 @@ info:
   seq: 2
 
 http:
-  method: POST
-  url: http://localhost:3000/api/chat
+  method: GET
+  url: http://localhost:3000/health
   body:
     type: json
     data: |-
