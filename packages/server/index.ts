@@ -1,8 +1,5 @@
 import dotenv from "dotenv"
-import type { Request, Response } from 'express'
 import express from 'express'
-import z from "zod"
-import { chatController } from './controllers/chat.controller'
 import router from './routes'
 
 

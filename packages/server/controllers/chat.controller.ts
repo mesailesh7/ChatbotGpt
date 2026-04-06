@@ -3,8 +3,6 @@ import { chatService } from "../services/chat.service";
 import z from "zod";
 
 
-
-
 const chatSchema = z.object({
   prompt: z.string()
     .trim()
